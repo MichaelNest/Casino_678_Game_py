@@ -1,6 +1,7 @@
 from ctypes import  *
 import time
 import random
+import os
 
 windll.Kernel32.GetStdHandle.restype = c_ulong
 h = windll.Kernel32.GetStdHandle(c_ulong(0xfffffff5))
@@ -8,7 +9,7 @@ h = windll.Kernel32.GetStdHandle(c_ulong(0xfffffff5))
 valuta ='грн.'
 money = 0
 startMoney = 0
-defaultMoney = 10000
+defaultMoney = 100000
 play_game = True
 
 
@@ -217,6 +218,94 @@ def get_roulette(visible):
             time.sleep(main_time)
     return number
 
+def get_dice():
+    count = random.randint(3, 8)
+    sleep = 0
+    while (count > 0):
+        color(count+7)
+        x = random.randint(1, 6)
+        y = random.randint(1, 6)
+        print(' '*10, '----- -----')
+        print(' '*10, f'| {x} | | {y} |')
+        print(' ' * 10, '----- -----')
+        time.sleep(sleep)
+        sleep += 1/count
+        count -=1
+    return x + y
+
+def dice():
+    global money
+    play_game = True
+
+    while(play_game):
+        print()
+        color_line(3, 'ДОБРО ПОЖАЛОВАТЬ НА ИГРУ В КОСТИ!!!')
+        color(14)
+        print(f'\n У тебя на счету {money} {valuta}\n')
+
+        color(7)
+        stavka = get_int_input(0, money, f'    Сделай ставку в пределах {money} {valuta}    ')
+        if(stavka == 0):
+            return 0
+
+        play_round = True
+        control = stavka
+        old_result = get_dice()
+        first_play = True
+
+        while(play_round and stavka > 0 and money > 0):
+            if(stavka > money):
+                stavka = money
+
+            color(11)
+            print(f'\n    В твоем распоряжении {stavka} {valuta}')
+            color(12)
+            print(f'\n    Текущая сумма чисел на костях: {old_result}')
+            color(11)
+            print('\n    Сумма чисел на гранях будет больше, меньше или равна предыдущуй??')
+            color(7)
+            x = get_input('0 1 2 3 ', '    Введите 1 - больше, 2 - меньше, 3 - равна или 0 - выход:    ')
+
+            if(x != '0'):
+                first_play = False
+                if(stavka > money):
+                    stavka = money
+
+                money -= stavka
+                dice_result = get_dice()
+
+                win = False
+                if(old_result > dice_result):
+                    if(x == '2'):
+                        win = True
+                elif(old_result < dice_result):
+                    if(x == '1'):
+                        win = True
+
+                if(not x == '3'):
+                    if(win):
+                        money += stavka + stavka//5
+                        peremoga(stavka // 5)
+                        stavka += stavka // 5
+                    else:
+                        stavka = control
+                        zrada(stavka)
+                elif(x == '3'):
+                    if(old_result == dice_result):
+                        money += stavka*3
+                        peremoga(stavka*3)
+                        stavka *= 3
+                    else:
+                        stavka = control
+                        zrada(stavka)
+                old_result = dice_result
+
+            else:
+                if(first_play):
+                    money -= stavka
+                play_round = False
+
+
 
 
 '''ЗАПУСК ИГРЫ'''
@@ -245,14 +334,13 @@ def main():
         elif(x =='1'):
             roulette()
         elif(x =='2'):
-            pass #dice
+            dice()
         elif(x == '3'):
             pass #one_hand_bandit()
 
     color_line(12, 'Жаль, что ты покидаеш нас! Но возвращайся скорей!!')
     color(13)
-    if(money <=0):
-        print('Упс. Ты остался без денег. Возьми микрокредит и возвращайся!!')
+
 
     color(11)
     if(money >startMoney):
@@ -263,6 +351,10 @@ def main():
         print(f'К сожалению, ты проиграл {startMoney - money} {valuta}')
         print('В следующий раз все обязательно получится!!')
     save_money(money)
+    if (money <= 0):
+        print('Упс. Ты остался без денег. Возьми микрокредит и возвращайся!!')
+        os.remove('money.txt')
+
 
     color(7)
     quit(0)
