@@ -305,7 +305,135 @@ def dice():
                     money -= stavka
                 play_round = False
 
+def get_max_cont(digit, v1, v2, v3, v4, v5):
+    ret = 0
+    if(digit == v1):
+        ret +=1
+    if(digit == v2):
+        ret +=1
+    if (digit == v3):
+        ret += 1
+    if (digit == v4):
+        ret += 1
+    if (digit == v5):
+        ret += 1
+    return ret
 
+def get_ohb_res(stavka):
+    res = stavka
+    d1 = 0
+    d2 = 0
+    d3 = 0
+    d4 = 0
+    d5 = 0
+
+    get_d1 = True
+    get_d2 = True
+    get_d3 = True
+    get_d4 = True
+    get_d5 = True
+
+    col = 10
+
+    while(get_d1 or get_d2 or get_d3 or get_d4 or get_d5):
+        if(get_d1):
+            d1 += 1
+        if (get_d2):
+            d2 += 1
+        if (get_d3):
+            d3 += 1
+        if (get_d4):
+            d4 += 1
+        if (get_d5):
+            d5 += 1
+
+        if(d1 > 9):
+            d1 = 0
+        if(d2 < 0):
+            d2 = 9
+        if(d3 > 9):
+            d3 = 0
+        if(d4 < 0):
+            d4 = 9
+        if(d5 > 9):
+            d5 = 0
+
+        if(random.randint(0, 20) == 1):
+            get_d1 = False
+        if (random.randint(0, 20) == 1):
+            get_d2 = False
+        if (random.randint(0, 20) == 1):
+            get_d3 = False
+        if (random.randint(0, 20) == 1):
+            get_d4 = False
+        if (random.randint(0, 20) == 1):
+            get_d5 = False
+
+        time.sleep(0.1)
+        color(col)
+        col +=1
+        if(col > 15):
+            col = 10
+
+        print('    '+'%'*10)
+        print(f'    {d1} {d2} {d3} {d4} {d5}')
+
+    max_count = get_max_cont(d1, d1, d2, d3, d4, d5)
+
+    if(max_count < get_max_cont(d2, d1, d2, d3, d4, d5)):
+        max_count = get_max_cont(d2, d1, d2, d3, d4, d5)
+    if (max_count < get_max_cont(d3, d1, d2, d3, d4, d5)):
+        max_count = get_max_cont(d3, d1, d2, d3, d4, d5)
+    if (max_count < get_max_cont(d4, d1, d2, d3, d4, d5)):
+        max_count = get_max_cont(d4, d1, d2, d3, d4, d5)
+    if (max_count < get_max_cont(d5, d1, d2, d3, d4, d5)):
+        max_count = get_max_cont(d5, d1, d2, d3, d4, d5)
+
+    color(14)
+    if(max_count ==2):
+        print(f'  Совпадение двух чисел!! Ставка не списывается: {res}')
+    elif(max_count == 3):
+        res *= 2
+        print(f'  Совпадение трех чисел!! Твой выигрыш 2:1 : {res}')
+    elif(max_count == 4):
+        res *= 5
+        print(f'  Совпадение ЧЕТЫРЕХ чисел!! Твой выигрыш 5:1 : {res}')
+    elif(max_count == 5):
+        res *=10
+        print(f'  БИНГО!!! Совпадение ВСЕХ чисел!! Твой выигрыш 10:1 : {res}')
+    else:
+        zrada(res)
+        res = 0
+    color(11)
+    print()
+    input('  Нажми Enter для продолжения...')
+
+    return res
+
+def one_hand_bandit():
+    global money
+    play_game = True
+    while(play_game):
+        color_line(3, 'ДОБРО ПОЖАЛОВАТЬ НА ИГРУ В ОДНОРУКОГО БАНДИТА!!')
+        color(14)
+        print(f'\n У тебя на счету {money} {valuta}\n')
+        color(5)
+
+        print(' Правила игр: ')
+        print('    1. При совпадении 2-х чисел ставка не списывается.')
+        print('    2. При совпадении 3-х чисел выигрыш 2:1.')
+        print('    3. При совпадении 4-х чисел выигрыш 5:1.')
+        print('    4. При совпадении 5-х чисел выигрыш 10:1.')
+        print('    5. Ставка 0 для завершения игры. \n')
+
+        stavka = get_int_input(0, money, f'    Введите ставку от 0 до {money}:    ')
+        if(stavka == 0):
+            return 0
+        money -=stavka
+        money += get_ohb_res(stavka)
+
+        if(money <=0):
+            play_game = False
 
 
 '''ЗАПУСК ИГРЫ'''
@@ -336,7 +464,7 @@ def main():
         elif(x =='2'):
             dice()
         elif(x == '3'):
-            pass #one_hand_bandit()
+            one_hand_bandit()
 
     color_line(12, 'Жаль, что ты покидаеш нас! Но возвращайся скорей!!')
     color(13)
